@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>구매하기 - 장바구니</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #111;
+    }
+
+    /* 상단 헤더 (삼성닷컴 느낌) */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid #e3e3e3;
+    }
+    .header-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      font-size: 18px;
+    }
+    .logo span {
+      color: #0056ff;
+    }
+    .header-nav {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* 페이지 레이아웃 */
+    .page {
+      max-width: 1040px;
+      margin: 28px auto 40px;
+      padding: 0 20px 40px;
+    }
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .page-sub {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.5fr) minmax(260px, 1fr);
+      gap: 20px;
+    }
+
+    /* 장바구니 카드 */
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      padding: 20px 22px;
+    }
+
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .cart-header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .cart-header-count {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .cart-list {
+      border-top: 1px solid #eee;
+      margin-top: 12px;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1.7fr) minmax(0, 1.1fr);
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid #f1f1f1;
+      align-items: center;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-thumb {
+      width: 88px;
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: #f7f8fa;
+      overflow: hidden;
+    }
+    .item-thumb img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .item-info-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .item-info-option {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+    .item-info-price {
+      font-size: 14px;
+      color: #111;
+      font-weight: 500;
+    }
+
+    .item-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .qty-control {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      overflow: hidden;
+      background: #fff;
+    }
+    .qty-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+    }
+    .qty-input {
+      width: 40px;
+      border: none;
+      text-align: center;
+      font-size: 13px;
+      padding: 0 4px;
+      outline: none;
+    }
+    .item-subtotal {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .delete-btn {
+      font-size: 12px;
+      color: #aaa;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* 요약 영역 */
+    .summary-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .summary-row--strong {
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    .summary-row span:nth-child(1) { color: #666; }
+
+    .summary-benefit {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f4f8ff;
+      font-size: 12px;
+      color: #345;
+    }
+
+    .btn-primary {
+      margin-top: 18px;
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #0067ff, #003cff);
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 96, 255, 0.3);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.02);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(0, 96, 255, 0.35);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(0, 96, 255, 0.25);
+    }
+
+    .summary-small {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #999;
+      text-align: right;
+    }
+
+    /* 반응형 */
+    @media (max-width: 840px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .card {
+        padding: 18px 16px;
+      }
+      .cart-item {
+        grid-template-columns: 88px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+      }
+      .item-controls {
+        grid-column: 2 / 3;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo"><span>SAMSUNG</span> SHOP</div>
+      <nav class="header-nav">
+        <span>제품</span>
+        <span>장바구니</span>
+        <span>고객지원</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <h1 class="page-title">장바구니</h1>
+    <p class="page-sub">선택하신 삼성 제품을 한 번에 확인하고 결제까지 진행하세요.</p>
+
+    <section class="layout">
+      <!-- 왼쪽: 카트 목록 -->
+      <section class="card">
+        <header class="cart-header">
+          <div class="cart-header-title">내 장바구니</div>
+          <div class="cart-header-count"><span id="itemCount">3</span>개 상품</div>
+        </header>
+
+        <div class="cart-list" id="cartList">
+          <!-- 갤럭시 폴드7 -->
+          <article class="cart-item" data-id="fold7" data-price="2000000">
+            <div class="item-thumb">
+              <img src="fold7.png" alt="Galaxy Fold7">
+            </div>
+            <div class="item-info">
+              <div class="item-info-name">갤럭시 Z 폴드7</div>
+              <div class="item-info-option">256GB · 팬텀 네이비</div>
+              <div class="item-info-price">2,000,000원</div>
+            </div>
+            <div class="item-controls">
+              <div class="qty-control">
+                <button class="qty-btn" data-action="minus">−</button>
+                <input class="qty-input" type="number" min="1" value="1" />
+                <button class="qty-btn" data-action="plus">+</button>
+              </div>
+              <div class="item-subtotal" data-subtotal>2,000,000원</div>
+              <button class="delete-btn" type="button">삭제</button>
+            </div>
+          </article>
+
+          <!-- 갤럭시 워치7 (이미지는 제공된 버즈 이미지를 플레이스홀더로 사용) -->
+          <article class="cart-item" data-id="watch7" data-price="450000">
+            <div class="item-thumb">
+              <img src="watch7.png" alt="Galaxy Watch7">
+            </div>
+            <div class="item-info">
+              <div class="item-info-name">갤럭시 워치7</div>
+              <div class="item-info-option">블루투스 · 44mm</div>
+              <div class="item-info-price">450,000원</div>
+            </div>
+            <div class="item-controls">
+              <div class="qty-control">
+                <button class="qty-btn" data-action="minus">−</button>
+                <input class="qty-input" type="number" min="1" value="1" />
+                <button class="qty-btn" data-action="plus">+</button>
+              </div>
+              <div class="item-subtotal" data-subtotal>450,000원</div>
+              <button class="delete-btn" type="button">삭제</button>
+            </div>
+          </article>
+
+          <!-- 갤럭시 버즈3 프로 -->
+          <article class="cart-item" data-id="buds3pro" data-price="250000">
+            <div class="item-thumb">
+              <img src="buds3 pro.png" alt="Galaxy Buds3 Pro">
+            </div>
+            <div class="item-info">
+              <div class="item-info-name">갤럭시 버즈3 프로</div>
+              <div class="item-info-option">티타늄 실버</div>
+              <div class="item-info-price">250,000원</div>
+            </div>
+            <div class="item-controls">
+              <div class="qty-control">
+                <button class="qty-btn" data-action="minus">−</button>
+                <input class="qty-input" type="number" min="1" value="1" />
+                <button class="qty-btn" data-action="plus">+</button>
+              </div>
+              <div class="item-subtotal" data-subtotal>250,000원</div>
+              <button class="delete-btn" type="button">삭제</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 오른쪽: 요약 -->
+      <aside class="card">
+        <div class="summary-title">주문 요약</div>
+
+        <div class="summary-row">
+          <span>상품 금액</span>
+          <span id="summaryProducts">0원</span>
+        </div>
+        <div class="summary-row">
+          <span>배송비</span>
+          <span id="summaryShipping">무료</span>
+        </div>
+        <div class="summary-row summary-row--strong">
+          <span>총 결제 예정 금액</span>
+          <span id="summaryTotal">0원</span>
+        </div>
+
+        <div class="summary-benefit">
+          삼성 계정으로 로그인 시, 포인트 적립 및 추가 혜택이 제공됩니다.
+        </div>
+
+        <button class="btn-primary" type="button" id="checkoutBtn">
+          결제하기
+        </button>
+        <div class="summary-small">
+          위 금액은 쿠폰 및 프로모션 적용 전 기준입니다.
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const KRW = new Intl.NumberFormat("ko-KR", {
+      style: "currency",
+      currency: "KRW",
+      maximumFractionDigits: 0
+    });
+
+    const cartListEl = document.getElementById("cartList");
+    const itemCountEl = document.getElementById("itemCount");
+    const summaryProductsEl = document.getElementById("summaryProducts");
+    const summaryTotalEl = document.getElementById("summaryTotal");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
+    function updateSummary() {
+      const items = cartListEl.querySelectorAll(".cart-item");
+      let total = 0;
+      items.forEach(item => {
+        const price = Number(item.dataset.price);
+        const qtyInput = item.querySelector(".qty-input");
+        const qty = Math.max(1, Number(qtyInput.value) || 1);
+        const subtotal = price * qty;
+        item.querySelector("[data-subtotal]").textContent = KRW.format(subtotal);
+        total += subtotal;
+      });
+
+      itemCountEl.textContent = items.length;
+      summaryProductsEl.textContent = KRW.format(total);
+      summaryTotalEl.textContent = KRW.format(total);
+    }
+
+    // 수량 증가/감소, 삭제
+    cartListEl.addEventListener("click", e => {
+      const target = e.target;
+
+      // + / - 버튼
+      if (target.classList.contains("qty-btn")) {
+        const action = target.dataset.action;
+        const item = target.closest(".cart-item");
+        const input = item.querySelector(".qty-input");
+        let value = Number(input.value) || 1;
+
+        if (action === "plus") value++;
+        if (action === "minus") value = Math.max(1, value - 1);
+
+        input.value = value;
+        updateSummary();
+      }
+
+      // 삭제 버튼
+      if (target.classList.contains("delete-btn")) {
+        const item = target.closest(".cart-item");
+        item.remove();
+        updateSummary();
+      }
+    });
+
+    // 수량 인풋 직접 변경
+    cartListEl.addEventListener("change", e => {
+      if (e.target.classList.contains("qty-input")) {
+        const input = e.target;
+        const value = Math.max(1, Number(input.value) || 1);
+        input.value = value;
+        updateSummary();
+      }
+    });
+
+    checkoutBtn.addEventListener("click", () => {
+      alert("데모 페이지입니다. 실제 결제는 진행되지 않습니다.");
+    });
+
+    // 초기 계산
+    updateSummary();
+  </script>
+</body>
+</html>
